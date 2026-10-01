@@ -1,0 +1,1268 @@
+:root {
+  color-scheme: dark;
+
+  /* Palet: biru #003F88 + kuning #FFD500, permukaan gelap diturunkan dari hue biru (212°). */
+  --blue: #003f88;          /* biru brand: tab aktif, relay menyala, logo */
+  --blue-deep: #0b2d5b;     /* awal gradasi kartu */
+  --accent: #ffd500;        /* kuning: aksi utama, status menyala */
+  --accent-soft: #ffe566;   /* teks kuning di atas latar gelap bertint */
+  --ink: #06162e;           /* teks di atas kuning */
+
+  --bg: #050f1e;
+  --panel: #0a1a31;
+  --panel-2: #10264a;
+  --card-end: #07162b;      /* akhir gradasi kartu */
+  --well: #06142a;          /* input dan area cekung */
+  --line: #1c3c6b;
+  --text: #eaf1fb;
+  --muted: #9db3d1;
+
+  --on: var(--accent);      /* status menyala/terhubung; ganti di sini bila ingin warna lain */
+  --red: #e0625d;
+  --red-soft: #ffb1ab;
+
+  --shadow: 0 18px 50px rgba(0, 0, 0, .35);
+  --radius: 20px;
+
+  /* --- Kaca (glassmorphism) --- */
+  --glass: rgba(20, 42, 78, .38);
+  --glass-strong: rgba(24, 50, 92, .52);
+  --glass-active: rgba(0, 63, 136, .40);
+  --glass-line: rgba(178, 205, 244, .16);
+  --glass-line-strong: rgba(255, 213, 0, .38);
+  --glass-highlight: rgba(255, 255, 255, .07);
+  --glass-shadow: 0 16px 40px rgba(2, 8, 20, .45), inset 0 1px 0 rgba(255, 255, 255, .05);
+  --blur: blur(22px) saturate(160%);
+  --blur-strong: blur(34px) saturate(180%);
+
+  /* --- Interaksi halus --- */
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --fast: .16s;
+  --med: .26s;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+               "Segoe UI", sans-serif;
+}
+
+body {
+  position: relative;
+  background: var(--bg);
+  overflow-x: hidden;
+}
+
+/* Bola cahaya kabur di belakang panel kaca — sumber warna yang "ditembus" oleh backdrop-filter */
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-orbs span {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: .55;
+  will-change: transform;
+}
+
+.bg-orbs span:nth-child(1) {
+  width: 46vh; height: 46vh;
+  top: -14vh; left: -8vw;
+  background: radial-gradient(circle, #0a4faf, transparent 70%);
+  animation: drift1 22s var(--ease) infinite alternate;
+}
+
+.bg-orbs span:nth-child(2) {
+  width: 34vh; height: 34vh;
+  top: 34vh; right: -10vw;
+  background: radial-gradient(circle, rgba(255, 213, 0, .55), transparent 70%);
+  animation: drift2 26s var(--ease) infinite alternate;
+}
+
+.bg-orbs span:nth-child(3) {
+  width: 40vh; height: 40vh;
+  bottom: -16vh; left: 18vw;
+  background: radial-gradient(circle, #123a72, transparent 70%);
+  animation: drift3 30s var(--ease) infinite alternate;
+}
+
+@keyframes drift1 { to { transform: translate(6vw, 8vh) scale(1.12); } }
+@keyframes drift2 { to { transform: translate(-7vw, 6vh) scale(1.08); } }
+@keyframes drift3 { to { transform: translate(5vw, -6vh) scale(1.15); } }
+
+/* Titik-titik melayang tipis di atas bola cahaya — digambar lewat JS (lihat particles* di app.js),
+   dimatikan otomatis kalau prefers-reduced-motion atau tab sedang tidak terlihat. */
+.particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: .5;
+}
+
+.screen, .app { position: relative; z-index: 1; }
+
+button, input { font: inherit; }
+
+button {
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--fast) var(--ease), background var(--fast) var(--ease),
+              border-color var(--fast) var(--ease), color var(--fast) var(--ease),
+              box-shadow var(--fast) var(--ease);
+}
+
+button:active:not(:disabled) { transform: scale(.96); }
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: .48;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-orbs span { animation: none !important; }
+  .particle-canvas { display: none; }
+}
+
+.app {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: max(18px, env(safe-area-inset-top)) 16px
+           max(28px, env(safe-area-inset-bottom));
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 34px);
+  letter-spacing: .06em;
+}
+
+.brand h1 span { color: var(--accent); }
+
+.brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.connection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 14px rgba(224, 98, 93, .65);
+}
+
+.status-dot.connected {
+  background: var(--on);
+  box-shadow: 0 0 14px rgba(255, 213, 0, .7);
+}
+
+.connect-btn {
+  padding: 11px 15px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 800;
+  box-shadow: 0 6px 18px rgba(255, 213, 0, .28);
+}
+
+.connect-btn:hover:not(:disabled) { box-shadow: 0 8px 22px rgba(255, 213, 0, .4); }
+
+.hero {
+  background: linear-gradient(145deg, rgba(11, 45, 91, .5), rgba(7, 22, 43, .38));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--glass-shadow);
+  margin-bottom: 16px;
+  transition: box-shadow var(--med) var(--ease), border-color var(--med) var(--ease);
+}
+
+.hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 11px;
+}
+
+.connection-text {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.device-info {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.security-badge {
+  flex: 0 0 auto;
+  border: 1px solid var(--glass-line);
+  border-radius: 999px;
+  padding: 8px 11px;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, .03);
+}
+
+.hero-note {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 22px 2px 11px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.section-title span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.relay-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.relay-card {
+  position: relative;
+  min-height: 204px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--med) var(--ease), transform var(--med) var(--ease-spring),
+              background var(--med) var(--ease), box-shadow var(--med) var(--ease);
+}
+
+.relay-card:active { transform: scale(.985); }
+
+.relay-card.active {
+  border-color: var(--glass-line-strong);
+  background: linear-gradient(145deg, rgba(0, 63, 136, .55), rgba(5, 42, 92, .42));
+  box-shadow: var(--glass-shadow), 0 0 0 1px rgba(255, 213, 0, .1), 0 0 26px rgba(255, 213, 0, .14);
+}
+
+.relay-card.master {
+  grid-column: 1 / -1;
+  min-height: 186px;
+  background: linear-gradient(145deg, rgba(11, 45, 91, .48), var(--glass));
+  border-color: rgba(255, 213, 0, .3);
+}
+
+.relay-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.relay-number {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+}
+
+.relay-name {
+  display: block;
+  margin-top: 5px;
+  font-size: 17px;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.relay-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.relay-state::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+}
+
+.relay-card.active .relay-state {
+  color: var(--on);
+}
+
+.relay-card.active .relay-state::before {
+  background: var(--on);
+  box-shadow: 0 0 10px rgba(255, 213, 0, .65);
+}
+
+/* "Beban saat ini" per relay: cincin + angka watt. Persennya relatif terhadap RELAY_MAX_WATT_REF
+   di app.js (referensi 2200 W, setara MCB/stopkontak rumah tangga standar) — bukan sensor nyata,
+   cuma supaya cincinnya punya skala yang masuk akal. Dihitung dari watt yang dikonfigurasi user
+   di tab Emisi × status ON/OFF relay yang nyata dari ESP32. */
+.relay-load {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.relay-ring {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  transform: rotate(-90deg);
+}
+
+.relay-ring circle {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.relay-ring .ring-track { stroke: var(--glass-line-strong); }
+
+.relay-ring .ring-fill {
+  stroke: var(--muted);
+  stroke-dasharray: 100.5;
+  stroke-dashoffset: 100.5;
+  transition: stroke-dashoffset var(--med) var(--ease-spring), stroke var(--med) var(--ease);
+}
+
+.relay-card.active .relay-ring .ring-fill { stroke: var(--accent); }
+
+.relay-watt { display: grid; gap: 1px; }
+
+.relay-watt strong { font-size: 15px; font-weight: 800; color: var(--text); }
+
+.relay-watt span {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+/* Kilas cincin sesaat ketika ESP32 mengonfirmasi relay berubah jadi ON — bukan dekorasi acak,
+   nandain "perintah kamu benar-benar sampai ke perangkat". Otomatis mati oleh reduced-motion
+   lewat aturan global di bawah. */
+@keyframes relayConfirm {
+  0% { box-shadow: var(--glass-shadow), 0 0 0 0 rgba(255, 213, 0, .38); }
+  70% { box-shadow: var(--glass-shadow), 0 0 0 16px rgba(255, 213, 0, 0); }
+  100% { box-shadow: var(--glass-shadow), 0 0 0 0 rgba(255, 213, 0, 0); }
+}
+
+.relay-card.confirm { animation: relayConfirm .65s var(--ease) 1; }
+
+.switch {
+  position: relative;
+  width: 54px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(36, 64, 107, .55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, .1);
+  transition: background var(--med) var(--ease), border-color var(--med) var(--ease);
+  flex: 0 0 auto;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e9eff9;
+  box-shadow: 0 2px 7px rgba(0,0,0,.32);
+  transition: transform .18s var(--ease-spring);
+}
+
+.switch.on {
+  background: var(--on);
+  border-color: var(--on);
+  box-shadow: 0 0 16px rgba(255, 213, 0, .35);
+}
+
+.switch.on::after { transform: translateX(22px); }
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+.action-btn {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  color: var(--text);
+  border: 1px solid var(--glass-line);
+  font-weight: 800;
+}
+
+.action-btn.on {
+  background: rgba(0, 63, 136, .38);
+  border-color: rgba(255, 213, 0, .5);
+  color: var(--accent-soft);
+}
+
+.action-btn.off {
+  background: rgba(224, 98, 93, .12);
+  border-color: rgba(224, 98, 93, .48);
+  color: var(--red-soft);
+}
+
+details {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: box-shadow var(--med) var(--ease);
+}
+
+details[open] { box-shadow: var(--glass-shadow); }
+
+summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 16px;
+  font-weight: 800;
+}
+
+summary::-webkit-details-marker { display: none; }
+
+.settings-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--line);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-top: 13px;
+}
+
+.field label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid var(--glass-line);
+  border-radius: 11px;
+  padding: 11px 12px;
+  background: rgba(6, 20, 42, .45);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--fast) var(--ease), box-shadow var(--fast) var(--ease);
+}
+
+.field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 213, 0, .14); }
+
+.save-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 850;
+  box-shadow: 0 6px 18px rgba(255, 213, 0, .25);
+}
+
+.save-btn:hover:not(:disabled) { box-shadow: 0 8px 24px rgba(255, 213, 0, .38); }
+
+.history {
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.history-head strong { font-size: 14px; }
+
+.clear-btn {
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.history-list li {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(28, 60, 107, .6);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.history-list li:last-child { border-bottom: 0; }
+.history-list time { color: var(--accent); }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  transform: translate(-50%, 14px) scale(.96);
+  width: min(calc(100% - 32px), 520px);
+  padding: 13px 15px;
+  border-radius: 13px;
+  background: rgba(238, 243, 251, .92);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--med) var(--ease), transform var(--med) var(--ease-spring);
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 100;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.unsupported {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding: 0 14px;
+  margin-bottom: 0;
+  border-radius: 13px;
+  border: 1px solid transparent;
+  background: rgba(0, 63, 136, .4);
+  backdrop-filter: var(--blur);
+  color: var(--accent-soft);
+  font-size: 12px;
+  line-height: 1.5;
+  transition: max-height var(--med) var(--ease), opacity var(--med) var(--ease),
+              margin-bottom var(--med) var(--ease), padding var(--med) var(--ease);
+}
+
+.unsupported.show {
+  max-height: 200px;
+  opacity: 1;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-color: rgba(255, 213, 0, .4);
+}
+
+
+.timer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.timer-card {
+  padding: 15px;
+  border-radius: 16px;
+  background: var(--glass);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  transition: border-color var(--med) var(--ease), transform var(--med) var(--ease-spring);
+}
+
+.timer-card:has(.timer-btn.cancel:not(:disabled)) { border-color: rgba(255, 213, 0, .3); }
+
+.timer-card strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.timer-card small {
+  display: block;
+  min-height: 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.timer-controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.timer-controls select,
+.timer-controls input,
+.settings-select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--glass-line);
+  border-radius: 11px;
+  padding: 10px 11px;
+  background: rgba(6, 20, 42, .45);
+  backdrop-filter: blur(10px);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--fast) var(--ease);
+}
+
+.timer-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.timer-btn {
+  padding: 10px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(16, 38, 74, .5);
+  backdrop-filter: blur(14px);
+  color: var(--text);
+  font-weight: 800;
+}
+
+.timer-btn.start {
+  border-color: rgba(255, 213, 0, .5);
+  color: var(--accent-soft);
+}
+
+.timer-btn.cancel {
+  border-color: rgba(224, 98, 93, .45);
+  color: var(--red-soft);
+}
+
+.timer-btn:disabled { opacity: .45; }
+
+.settings-block {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.settings-block:first-child {
+  border-top: 0;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.settings-block h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
+.settings-help {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.feature-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.feature-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 11px;
+  background: rgba(6, 20, 42, .4);
+  backdrop-filter: blur(10px);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.feature-row strong { color: var(--text); }
+
+.emisi-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.emisi-stat {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(6, 20, 42, .4);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-line);
+  display: grid;
+  gap: 4px;
+}
+
+.emisi-stat span { font-size: 11px; color: var(--muted); }
+.emisi-stat strong { font-size: 19px; color: var(--accent-soft); }
+
+/* Panel grafik gelombang daya (tab Emisi). Sumbernya total watt relay yang sedang ON
+   (state.energy.watt × state.relays asli dari ESP32) — bukan sensor arus. Dihaluskan lewat
+   requestAnimationFrame di app.js (lihat powerWave*) supaya pergerakannya terasa hidup, tapi
+   datanya tetap jujur terhadap apa yang benar-benar diketahui aplikasi. */
+.power-wave-panel {
+  padding: 14px 14px 10px;
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(11, 45, 91, .42), rgba(7, 22, 43, .34));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
+}
+
+#powerWaveCanvas { display: block; width: 100%; height: 120px; }
+
+/* Baris proporsi per-soket: nama+persen di atas, bar tipis di bawah. Persen = watt relay yang
+   ON dibagi total watt semua relay yang ON saat itu (renderPower() di app.js). */
+.proportion-row {
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid var(--glass-line);
+  border-radius: 11px;
+  background: rgba(6, 20, 42, .4);
+  backdrop-filter: blur(10px);
+}
+
+.proportion-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.proportion-head strong { color: var(--text); font-weight: 700; }
+
+.proportion-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--glass-line-strong);
+  overflow: hidden;
+}
+
+.proportion-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--blue), var(--accent));
+  width: 0%;
+  transition: width var(--med) var(--ease-spring);
+}
+
+.power-proportion-list .empty-hint {
+  padding: 14px 12px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  border: 1px dashed var(--glass-line);
+  border-radius: 11px;
+}
+
+.save-btn.danger { background: var(--red); color: var(--text); }
+
+.countdown-alert {
+  display: block;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-top: 0;
+  padding: 0 12px;
+  border-radius: 11px;
+  background: rgba(0, 63, 136, .4);
+  backdrop-filter: blur(14px);
+  border: 1px solid transparent;
+  color: var(--accent-soft);
+  font-size: 12px;
+  transition: max-height var(--med) var(--ease), opacity var(--med) var(--ease),
+              margin-top var(--med) var(--ease), padding var(--med) var(--ease);
+}
+
+.countdown-alert.show {
+  max-height: 80px;
+  opacity: 1;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-color: rgba(255, 213, 0, .38);
+}
+
+@media (max-width: 520px) {
+  .app { padding-left: 12px; padding-right: 12px; }
+  .topbar { align-items: flex-start; }
+  .connection { flex-direction: column; align-items: flex-end; gap: 7px; }
+  .relay-grid { grid-template-columns: 1fr; }
+  .relay-card.master { grid-column: auto; }
+  .timer-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   PAGE 1 — LOGIN
+   ============================================================ */
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.login-wrap {
+  width: min(100%, 460px);
+  margin: 0 auto;
+  min-height: 100vh;   /* cadangan untuk WebView lama tanpa dvh */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  padding: max(24px, env(safe-area-inset-top)) 18px
+           max(24px, env(safe-area-inset-bottom));
+}
+
+.login-brand { text-align: center; }
+
+.login-logo {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+  background: linear-gradient(145deg, rgba(0, 63, 136, .55), rgba(10, 26, 49, .4));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid rgba(255, 213, 0, .4);
+  box-shadow: var(--glass-shadow);
+}
+
+.login-logo svg { width: 38px; height: 38px; }
+
+.login-brand h1 {
+  margin: 0;
+  font-size: 30px;
+  letter-spacing: .07em;
+}
+
+.login-brand h1 span { color: var(--accent); }
+
+.login-brand p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.login-card {
+  background: linear-gradient(145deg, rgba(11, 45, 91, .48), rgba(7, 22, 43, .36));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--glass-shadow);
+}
+
+.login-card h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.login-card > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.login-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1px solid var(--glass-line);
+  border-radius: 12px;
+  background: rgba(6, 20, 42, .4);
+  backdrop-filter: blur(10px);
+  color: var(--muted);
+  font-size: 12px;
+  transition: border-color var(--med) var(--ease), color var(--med) var(--ease);
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 15px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--ink);
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  box-shadow: 0 8px 22px rgba(255, 213, 0, .3);
+}
+
+.login-btn:hover:not(:disabled) { box-shadow: 0 10px 28px rgba(255, 213, 0, .42); }
+
+.login-btn svg { width: 19px; height: 19px; }
+
+.login-hint {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: var(--red-soft);
+  font-size: 11px;
+  min-height: 14px;
+}
+
+/* ============================================================
+   PAGE 2 — TAB PANELS + BOTTOM NAVIGATION
+   ============================================================ */
+
+.app { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+
+.tab-panel {
+  display: none;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.tab-panel.active {
+  display: block;
+  animation: panelIn .26s var(--ease) both;
+}
+
+.tab-panel.leaving {
+  display: block;
+  animation: panelOut .14s var(--ease) both;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes panelOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+/* Kartu relay masuk bertahap (stagger) saat tab Control tampil */
+.tab-panel.active .relay-card {
+  animation: cardIn .3s var(--ease) both;
+}
+.tab-panel.active .relay-card:nth-child(1) { animation-delay: .02s; }
+.tab-panel.active .relay-card:nth-child(2) { animation-delay: .06s; }
+.tab-panel.active .relay-card:nth-child(3) { animation-delay: .10s; }
+.tab-panel.active .relay-card:nth-child(4) { animation-delay: .14s; }
+.tab-panel.active .relay-card:nth-child(5) { animation-delay: .18s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(100%, 760px);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  background: rgba(6, 20, 42, .55);
+  backdrop-filter: var(--blur-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  border-top: 1px solid var(--glass-line);
+  box-shadow: 0 -8px 30px rgba(2, 8, 20, .3);
+  z-index: 90;
+}
+
+/* Pil yang meluncur di belakang tab aktif — satu elemen, digeser (bukan tiap tombol ganti
+   background sendiri-sendiri) supaya perpindahannya terasa "mengalir". Posisi & lebarnya
+   diukur langsung dari tombol aktif lewat getBoundingClientRect() di positionTabIndicator()
+   (app.js) — bukan persentase, supaya nggak tergantung cara .tabbar (grid) membagi kolom.
+   width/left di bawah cuma nilai awal sebelum JS sempat mengukur. */
+.tab-indicator {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  width: calc((100% - 16px) / 5);
+  border-radius: 14px;
+  background: rgba(0, 63, 136, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 4px 14px rgba(0, 63, 136, .35);
+  transition: left var(--med) var(--ease-spring), width var(--med) var(--ease-spring);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 9px 4px;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  transition: color var(--fast) var(--ease), transform var(--fast) var(--ease-spring);
+}
+
+.tab-btn svg {
+  width: 21px;
+  height: 21px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.tab-btn .tab-dot {
+  position: absolute;
+  margin-left: 22px;
+  margin-top: -2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--on);
+  display: none;
+}
+
+.tab-btn .tab-dot.show { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-indicator { transition: none; }
+}
+
+/* ============================================================
+   TAB 4 — INFORMASI USER
+   ============================================================ */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, rgba(11, 45, 91, .48), rgba(7, 22, 43, .36));
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--glass-shadow);
+}
+
+.avatar {
+  flex: 0 0 auto;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--accent), #d9b300);
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 850;
+}
+
+.profile-meta strong {
+  display: block;
+  font-size: 19px;
+  overflow-wrap: anywhere;
+}
+
+.profile-meta span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.logout-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(224, 98, 93, .12);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(224, 98, 93, .48);
+  color: var(--red-soft);
+  font-weight: 850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.logout-btn:hover:not(:disabled) { background: rgba(224, 98, 93, .2); }
+
+.logout-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 520px) {
+  .tab-btn { font-size: 10px; }
+  .profile-card { gap: 12px; padding: 16px; }
+}
+
+
+/* ============================================================
+   AKSESIBILITAS + DIALOG KONFIRMASI
+   ============================================================ */
+
+/* Input/select memakai outline:none, jadi fokus keyboard tidak terlihat. */
+.field input:focus-visible,
+.timer-controls select:focus-visible,
+.timer-controls input:focus-visible,
+.settings-select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.confirm-dialog {
+  width: min(calc(100% - 40px), 360px);
+  padding: 20px;
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  color: var(--text);
+  box-shadow: var(--glass-shadow);
+  animation: dialogIn .28s var(--ease-spring);
+}
+
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(.92) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(2, 6, 14, .55);
+  backdrop-filter: blur(4px);
+}
+.confirm-dialog p { margin: 0 0 16px; font-size: 14px; line-height: 1.5; }
+.confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Knob saat ON: gelap, supaya kontras terhadap trek kuning */
+.switch.on::after { background: var(--ink); }
