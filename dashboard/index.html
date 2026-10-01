@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#06142a">
+  <title>Dashboard ENNERA</title>
+  <style>
+    :root{color-scheme:dark;--bg:#06142a;--sidebar:#081a33;--panel:#0d203a;--panel-2:#102844;--line:#203958;--text:#f4f7fb;--muted:#91a6c1;--blue:#ffd500;--blue-soft:#2a2a13;--cyan:#ffd500;--green:#42d6a0;--yellow:#ffd500;--red:#ff7185;--radius:16px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    [hidden]{display:none!important}
+    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0,#0b2a4f 0,transparent 55%),var(--bg)}
+    .login-card{width:min(100%,400px);padding:32px;border:1px solid var(--line);border-radius:22px;background:var(--sidebar);box-shadow:0 24px 80px #0007}
+    .brand-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:var(--blue);color:white;font-size:21px;font-weight:800}
+    .login-card h1{margin:18px 0 4px;font-size:23px;letter-spacing:.04em}
+    .login-card>p{margin:0 0 24px;color:var(--muted)}
+    .field{display:grid;gap:7px;margin-bottom:15px}
+    .field label{font-size:12px;color:#c6d4e8}
+    .field input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#080f1c;color:var(--text);outline:none}
+    .field input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #ffd50033}
+    .primary{width:100%;border:0;border-radius:12px;padding:12px 16px;background:var(--blue);color:#06142a;font-weight:800;box-shadow:0 8px 24px #ffd50026}
+    .primary:hover{background:#ffe04d}
+    .error{min-height:21px;color:var(--red);font-size:13px}
+    .app{min-height:100vh;display:grid;grid-template-columns:244px minmax(0,1fr)}
+    .sidebar{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:24px 16px;border-right:1px solid var(--line);background:var(--sidebar)}
+    .brand{display:flex;align-items:center;gap:11px;padding:0 9px 27px}
+    .brand .brand-mark{width:36px;height:36px;border-radius:11px;font-size:18px}
+    .brand-name{font-size:16px;font-weight:800;letter-spacing:.08em}
+    .brand-caption{font-size:11px;color:var(--muted)}
+    .nav-label{padding:0 10px 9px;color:#6e819c;font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+    .nav{display:grid;gap:5px}
+    .nav button{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:10px;text-align:left;color:var(--muted);background:transparent}
+    .nav button:hover{background:#ffffff09;color:var(--text)}
+    .nav button.active{background:var(--blue-soft);color:#ffd500}
+    .nav-icon{width:20px;text-align:center;font-size:16px}
+    .sidebar-spacer{flex:1}
+    .user-card{display:flex;align-items:center;gap:10px;padding:12px 8px;border-top:1px solid var(--line)}
+    .avatar{width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:50%;background:#18385d;color:#ffe66b;font-weight:700}
+    .user-copy{min-width:0;flex:1}
+    .user-copy strong,.user-copy span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .user-copy strong{font-size:12px}
+    .user-copy span{font-size:11px;color:var(--muted)}
+    .logout{border:0;background:transparent;color:var(--muted);font-size:12px}
+    .logout:hover{color:var(--red)}
+    .main{min-width:0;padding:30px clamp(18px,4vw,52px) 48px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:27px}
+    .eyebrow{margin:0 0 4px;color:var(--muted);font-size:12px}
+    .topbar h1{margin:0;font-size:clamp(23px,3vw,30px);letter-spacing:-.035em}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .date-label{color:var(--muted);font-size:12px}
+    .refresh{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:var(--panel);color:var(--text)}
+    .refresh:hover{border-color:#36537b}
+    .live-dot,.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px #42d6a077}
+    .welcome{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;margin-bottom:21px;border:1px solid #29486b;border-radius:var(--radius);background:linear-gradient(110deg,#102f52,#101a2b 75%)}
+    .welcome h2{margin:0 0 4px;font-size:18px}
+    .welcome p{margin:0;color:#b5c6da;font-size:13px}
+    .period-control{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+    select{border:1px solid var(--line);border-radius:9px;padding:9px 30px 9px 11px;background:var(--panel);color:var(--text)}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:25px 0 12px}
+    .section-head h2{margin:0;font-size:15px}
+    .section-head span,.subtle{color:var(--muted);font-size:12px}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+    .card{min-width:0;padding:17px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel)}
+    .metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font-size:12px}
+    .metric-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#183653;color:#ffd500;font-size:16px}
+    .metric-value{margin:15px 0 3px;font-size:25px;font-weight:750;letter-spacing:-.04em}
+    .metric-note{color:var(--muted);font-size:11px}
+    .metric-note.good{color:var(--green)}
+    .content-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,1fr);gap:14px}
+    .card-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:14px}
+    .card-title h3{margin:0;font-size:14px}
+    .card-title p{margin:3px 0 0;color:var(--muted);font-size:11px}
+    .chart{width:100%;height:220px;overflow:visible}
+    .chart .gridline{stroke:#28415f;stroke-width:1}
+    .chart .area{fill:url(#areaFill)}
+    .chart .line{fill:none;stroke:var(--blue);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+    .chart .point{fill:#101a2b;stroke:#ffe04d;stroke-width:2}
+    .chart text{fill:#8da3bf;font-size:10px}
+    .legend{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}
+    .legend i{width:8px;height:8px;border-radius:50%;background:var(--blue)}
+    .activity-list{display:grid}
+    .activity{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #1d2b40}
+    .activity:last-child{border-bottom:0}
+    .activity-icon{width:34px;height:34px;display:grid;place-items:center;flex:none;border-radius:10px;background:#173451;color:#ffd500}
+    .activity-copy{min-width:0;flex:1}
+    .activity-copy strong,.activity-copy span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .activity-copy strong{font-size:12px}
+    .activity-copy span{margin-top:2px;color:var(--muted);font-size:11px}
+    .activity time{color:var(--muted);font-size:10px;white-space:nowrap}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;white-space:nowrap}
+    th,td{padding:12px 10px;border-bottom:1px solid #1d2b40;text-align:left}
+    th{color:var(--muted);font-size:10px;font-weight:600}
+    td{font-size:12px}
+    tbody tr:last-child td{border-bottom:0}
+    .status{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:99px;background:#142d29;color:var(--green);font-size:10px;font-weight:700}
+    .status.off{background:#182940;color:#9aabc1}
+    .status .dot{width:6px;height:6px;box-shadow:none}
+    .status.off .dot{background:#72829a}
+    .anomaly{display:inline-block;padding:3px 8px;border-radius:99px;background:#1b3048;color:#9aabc1;font-size:10px}
+    .anomaly.warn,.anomaly.high{background:#392331;color:#ffd18a}
+    .anomaly.normal{background:#142d29;color:var(--green)}
+    .empty{padding:22px;text-align:center;color:var(--muted);font-size:12px}
+    .empty code{color:#a9c9ff}
+    .analysis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+    .insight{padding:14px;border:1px solid var(--line);border-radius:12px;background:#0b1c32}
+    .insight strong{display:block;margin-bottom:6px;font-size:12px}
+    .insight p{margin:0;color:#b5c6da;font-size:12px}
+    .insight.warn{border-color:#6a4321}
+    .bar-row{display:grid;grid-template-columns:minmax(100px,1fr) minmax(80px,2fr) 70px;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #1d2b40}
+    .bar-row:last-child{border:0}
+    .bar-name,.bar-value{font-size:12px}
+    .bar-value{text-align:right;color:#d7e2ef}
+    .bar-track{height:7px;overflow:hidden;border-radius:99px;background:#1b3553}
+    .bar-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#d5b000,#ffd500)}
+    .report-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .report-summary .card{padding:15px}
+    .report-summary span{color:var(--muted);font-size:11px}
+    .report-summary strong{display:block;margin-top:8px;font-size:20px}
+    .profile{display:flex;align-items:center;gap:15px;margin-bottom:16px}
+    .profile .avatar{width:54px;height:54px;font-size:19px}
+    .profile h3{margin:0 0 3px;font-size:16px}
+    .profile p{margin:0;color:var(--muted);font-size:12px}
+    .profile-row{display:flex;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid #1d2b40;font-size:12px}
+    .profile-row:last-child{border:0}
+    .profile-row span{color:var(--muted)}
+    .toast{position:fixed;right:22px;bottom:20px;z-index:5;max-width:min(420px,calc(100vw - 44px));padding:12px 16px;border:1px solid var(--line);border-radius:10px;background:#102946;color:var(--text);box-shadow:0 10px 30px #0005}
+
+    :focus-visible{outline:2px solid #ffd500;outline-offset:2px}
+    .refresh:hover{border-color:#ffd50066;background:#112946}
+    .welcome{box-shadow:0 12px 35px #0003}
+    .card{box-shadow:0 8px 24px #0002}
+
+    @media(max-width:1050px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}}
+    @media(max-width:700px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:13px 15px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:0 5px 12px}.nav-label,.sidebar-spacer{display:none}.nav{display:flex;overflow:auto;gap:5px}.nav button{width:auto;flex:none;padding:9px 11px;font-size:12px}.nav-icon{width:auto}.user-card{padding:10px 5px 0;border-top:0}.main{padding:20px 15px 35px}.topbar{align-items:flex-start;margin-bottom:18px}.top-actions{flex-direction:column;align-items:flex-end}.date-label{display:none}.welcome{align-items:flex-start;flex-direction:column;padding:18px}.metrics{gap:9px}.card{padding:14px}.metric-value{font-size:21px}.analysis-grid{grid-template-columns:1fr}.report-summary{grid-template-columns:1fr}.report-summary .card{display:flex;align-items:center;justify-content:space-between}.report-summary strong{margin:0}.chart{height:190px}}
+    @media(max-width:390px){.metrics{grid-template-columns:1fr 1fr}.metric-top{align-items:flex-start}.metric-top>span:first-child{max-width:100px}.refresh{padding:8px}.refresh-label{display:none}}
+  </style>
+</head>
+<body>
+  <form class="login-wrap" id="login" hidden>
+    <div class="login-card">
+      <div class="brand-mark" aria-hidden="true">E</div>
+      <h1>Selamat datang</h1>
+      <p>Masuk untuk membuka dashboard monitoring ENNERA.</p>
+      <div class="field"><label for="u">Username</label><input id="u" autocomplete="username" required placeholder="Username"></div>
+      <div class="field"><label for="p">Password</label><input id="p" type="password" autocomplete="current-password" required placeholder="Password"></div>
+      <button class="primary">Masuk ke dashboard</button>
+      <div class="error" id="err" role="alert"></div>
+    </div>
+  </form>
+
+  <div class="app" id="app" hidden>
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark" aria-hidden="true">E</div><div><div class="brand-name">ENNERA</div><div class="brand-caption">Energy intelligence</div></div></div>
+      <div class="nav-label">Menu utama</div>
+      <nav class="nav" aria-label="Navigasi dashboard">
+        <button class="active" data-view="overview"><span class="nav-icon">⌂</span>Dashboard</button>
+        <button data-view="analytics"><span class="nav-icon">◫</span>Analitik</button>
+        <button data-view="reports"><span class="nav-icon">▤</span>Laporan</button>
+        <button data-view="account"><span class="nav-icon">◉</span>Pengguna</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="user-card"><div class="avatar" id="sideAvatar">E</div><div class="user-copy"><strong id="sideName">Admin ENNERA</strong><span>Administrator</span></div><button class="logout" id="out" title="Keluar">Keluar</button></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">Ruang kerja / <span id="crumb">Dashboard</span></p><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions"><span class="date-label" id="dateLabel"></span><button class="refresh" id="refresh"><span class="live-dot"></span><span class="refresh-label">Perbarui data</span></button></div>
+      </header>
+      <section class="welcome">
+        <div><h2 id="greeting">Halo!</h2><p>Pantau konsumsi energi, status perangkat, dan aktivitas ENNERA dalam satu tempat.</p></div>
+        <label class="period-control" for="period">Periode
+          <select id="period"><option value="day">7 hari</option><option value="week">4 minggu</option><option value="month">6 bulan</option></select>
+        </label>
+      </section>
+      <div id="view" aria-live="polite"></div>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script src="/analytics.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const labels = { overview: "Dashboard", analytics: "Analitik", reports: "Laporan", account: "Pengguna" };
+    let token = sessionStorage.getItem("ecoToken"), username = sessionStorage.getItem("ecoUser") || "", activeView = "overview", timer = null, toastTimer = null;
+    const state = { latest: [], history: { names: [], rows: [] }, analysis: { anomalies: [], recommendations: [] } };
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const number = (n, d = 1) => n == null || !Number.isFinite(Number(n)) ? "—" : Number(n).toLocaleString("id-ID", { minimumFractionDigits: d, maximumFractionDigits: d });
+    const levelLabel = (level) => ({ high: "Tinggi", warn: "Waspada", normal: "Normal", learning: "Belajar pola" }[level] || "Normal");
+    const empty = '<div class="empty">Belum ada data perangkat. Kirim data ESP32 ke <code>/api/ingest</code> atau jalankan <code>npm run seed</code> untuk data demo.</div>';
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) } });
+      if (response.status === 401 && path !== "/api/login") { logout(); throw new Error("Sesi berakhir, silakan masuk kembali."); }
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || `Permintaan gagal (${response.status})`);
+      return body;
+    }
+
+    function showToast(message) {
+      $("toast").textContent = message;
+      $("toast").hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { $("toast").hidden = true; }, 2800);
+    }
+
+    function logout() {
+      token = "";
+      clearInterval(timer);
+      sessionStorage.removeItem("ecoToken");
+      sessionStorage.removeItem("ecoUser");
+      $("app").hidden = true;
+      $("login").hidden = false;
+    }
+
+    $("login").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      $("err").textContent = "";
+      try {
+        const result = await api("/api/login", { method: "POST", body: JSON.stringify({ username: $("u").value.trim(), password: $("p").value }) });
+        token = result.token;
+        username = $("u").value.trim();
+        sessionStorage.setItem("ecoToken", token);
+        sessionStorage.setItem("ecoUser", username);
+        start();
+      } catch (error) { $("err").textContent = error.message; }
+    });
+
+    $("out").addEventListener("click", logout);
+    $("refresh").addEventListener("click", () => loadData(true));
+    $("period").addEventListener("change", () => loadData());
+    document.querySelectorAll(".nav button").forEach((button) => button.addEventListener("click", () => {
+      activeView = button.dataset.view;
+      document.querySelectorAll(".nav button").forEach((item) => item.classList.toggle("active", item === button));
+      render();
+    }));
+
+    function render() {
+      $("crumb").textContent = labels[activeView];
+      $("pageTitle").textContent = labels[activeView];
+      if (activeView === "overview") renderOverview();
+      if (activeView === "analytics") renderAnalytics();
+      if (activeView === "reports") renderReports();
+      if (activeView === "account") renderAccount();
+    }
+
+    function renderOverview() {
+      const latest = state.latest, history = state.history.rows, analysis = state.analysis;
+      if (!latest.length) { $("view").innerHTML = empty; return; }
+      const newest = history[history.length - 1] || { total: 0, kwh: [] };
+      const active = latest.filter((item) => item.status === "ON");
+      const power = active.reduce((sum, item) => sum + (Number(item.power) || 0), 0);
+      const alerts = analysis.anomalies.filter((item) => item.level === "high" || item.level === "warn").length;
+      $("view").innerHTML = `
+        <section class="metrics">
+          <article class="card"><div class="metric-top"><span>Energi hari ini</span><span class="metric-icon">↗</span></div><div class="metric-value">${number(newest.total, 3)} <small>kWh</small></div><div class="metric-note">Akumulasi konsumsi perangkat</div></article>
+          <article class="card"><div class="metric-top"><span>Daya saat ini</span><span class="metric-icon">ϟ</span></div><div class="metric-value">${number(power, 0)} <small>W</small></div><div class="metric-note good">Berdasarkan pembacaan terbaru</div></article>
+          <article class="card"><div class="metric-top"><span>Channel aktif</span><span class="metric-icon">◉</span></div><div class="metric-value">${active.length} <small>/ ${latest.length}</small></div><div class="metric-note">Perangkat terpantau</div></article>
+          <article class="card"><div class="metric-top"><span>Anomali terdeteksi</span><span class="metric-icon">!</span></div><div class="metric-value">${alerts}</div><div class="metric-note">${alerts ? "Perlu pemeriksaan" : "Semua dalam kondisi normal"}</div></article>
+        </section>
+        <div class="content-grid">
+          <section class="card"><div class="card-title"><div><h3>Tren konsumsi energi</h3><p>Ringkasan penggunaan untuk periode terpilih</p></div><div class="legend"><i></i>Energi (kWh)</div></div>${chart(history)}</section>
+          <section class="card"><div class="card-title"><div><h3>Aktivitas terbaru</h3><p>Status terkini per channel</p></div><span class="subtle">${latest.length} channel</span></div>${activityList(latest)}</section>
+        </div>
+        <div class="section-head"><h2>Status perangkat</h2><span>Data sensor terbaru</span></div>
+        <section class="card table-wrap">${channelTable(latest)}</section>`;
+    }
+
+    function activityList(latest) {
+      if (!latest.length) return empty;
+      return `<div class="activity-list">${[...latest].sort((a, b) => b.ts - a.ts).slice(0, 5).map((item) => `
+        <div class="activity"><div class="activity-icon">${item.status === "ON" ? "ϟ" : "○"}</div><div class="activity-copy"><strong>${esc(item.name)}</strong><span>${item.status === "ON" ? `Menyala · ${number(item.power, 0)} W` : "Perangkat tidak aktif"}</span></div><time>${new Date(item.ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}</time></div>`).join("")}</div>`;
+    }
+
+    function channelTable(latest) {
+      if (!latest.length) return empty;
+      return `<table><thead><tr><th>CHANNEL</th><th>STATUS</th><th>TEGANGAN</th><th>ARUS</th><th>DAYA</th><th>ANALISIS</th></tr></thead><tbody>${latest.map((item) => `
+        <tr><td><strong>${esc(item.name)}</strong></td><td><span class="status ${item.status === "ON" ? "" : "off"}"><i class="dot"></i>${esc(item.status)}</span></td>
+        <td>${number(item.voltage, 1)} V</td><td>${number(item.current, 2)} A</td><td>${number(item.power, 0)} W</td>
+        <td><span class="anomaly ${esc(item.anomaly?.level || "normal")}">${esc(levelLabel(item.anomaly?.level))}</span></td></tr>`).join("")}</tbody></table>`;
+    }
+
+    function chart(rows) {
+      if (!rows.length) return empty;
+      const width = 640, height = 220, left = 34, right = 14, top = 12, bottom = 34;
+      const plotWidth = width - left - right, plotHeight = height - top - bottom;
+      const max = Math.max(...rows.map((row) => Number(row.total) || 0), 0.01);
+      const points = rows.map((row, index) => {
+        const x = left + (rows.length === 1 ? plotWidth / 2 : index / (rows.length - 1) * plotWidth);
+        const y = top + plotHeight - (Number(row.total) || 0) / max * plotHeight;
+        return { x, y, label: row.label };
+      });
+      const line = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+      const area = `${left},${top + plotHeight} ${line} ${left + plotWidth},${top + plotHeight}`;
+      const grid = [0, 1, 2, 3].map((index) => {
+        const y = top + index * plotHeight / 3;
+        const value = max * (1 - index / 3);
+        return `<line class="gridline" x1="${left}" y1="${y}" x2="${width - right}" y2="${y}"/><text x="0" y="${y + 3}">${number(value, 1)}</text>`;
+      }).join("");
+      const labels = points.map((point, index) => index % Math.max(1, Math.ceil(points.length / 7)) === 0 || index === points.length - 1
+        ? `<text x="${point.x}" y="${height - 8}" text-anchor="middle">${esc(point.label)}</text>` : "").join("");
+      const circles = points.map((point) => `<circle class="point" cx="${point.x}" cy="${point.y}" r="3"/>`).join("");
+      return `<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Grafik tren energi"><defs><linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#ffd500" stop-opacity=".28"/><stop offset="100%" stop-color="#ffd500" stop-opacity="0"/></linearGradient></defs>${grid}<polygon class="area" points="${area}"/><polyline class="line" points="${line}"/>${circles}${labels}</svg>`;
+    }
+
+    function renderAnalytics() {
+      const { anomalies, recommendations } = state.analysis;
+      const history = state.history;
+      const totals = history.names.map((name, index) => ({ name, value: history.rows.reduce((sum, row) => sum + (Number(row.kwh[index]) || 0), 0) }));
+      const max = Math.max(...totals.map((item) => item.value), 0.001);
+      $("view").innerHTML = `
+        <div class="section-head"><h2>Deteksi anomali</h2><span>Perbandingan dengan pola daya normal</span></div>
+        <section class="analysis-grid">${anomalies.length ? anomalies.map((item) => `<article class="insight ${item.level === "high" || item.level === "warn" ? "warn" : ""}"><strong>${esc(item.name)} <span class="anomaly ${esc(item.level)}">${esc(levelLabel(item.level))}</span></strong><p>${item.ratio ? `Daya terbaru sekitar ${number(item.ratio, 1)}× dari pola normal.` : item.level === "learning" ? "Pola penggunaan sedang dipelajari dari data perangkat." : "Tidak ditemukan penyimpangan dari pola normal."}</p></article>`).join("") : empty}</section>
+        <div class="section-head"><h2>Perbandingan channel</h2><span>Total energi periode terpilih</span></div>
+        <section class="card">${totals.length ? totals.map((item) => `<div class="bar-row"><span class="bar-name">${esc(item.name)}</span><div class="bar-track"><i style="width:${Math.max(item.value / max * 100, item.value ? 2 : 0)}%"></i></div><strong class="bar-value">${number(item.value, 3)} kWh</strong></div>`).join("") : empty}</section>
+        <div class="section-head"><h2>Rekomendasi efisiensi</h2><span>Analisis otomatis ENNERA</span></div>
+        <section class="analysis-grid">${recommendations.length ? recommendations.map((item) => `<article class="insight ${item.level === "high" || item.level === "warn" ? "warn" : ""}"><strong>${item.level === "high" || item.level === "warn" ? "Perlu perhatian" : "Saran efisiensi"}</strong><p>${esc(item.text)}</p></article>`).join("") : '<div class="card empty">Belum ada rekomendasi. Data konsumsi akan dianalisis saat tersedia.</div>'}</section>`;
+    }
+
+    function renderReports() {
+      const rows = state.history.rows;
+      const total = rows.reduce((sum, row) => sum + (Number(row.total) || 0), 0);
+      const average = rows.length ? total / rows.length : 0;
+      const peak = rows.reduce((best, row) => Math.max(best, Number(row.total) || 0), 0);
+      $("view").innerHTML = `
+        <div class="section-head"><h2>Ringkasan laporan</h2><span>${rows.length} periode tercatat</span></div>
+        <section class="report-summary"><article class="card"><span>Total energi</span><strong>${number(total, 3)} kWh</strong></article><article class="card"><span>Rata-rata per periode</span><strong>${number(average, 3)} kWh</strong></article><article class="card"><span>Pemakaian tertinggi</span><strong>${number(peak, 3)} kWh</strong></article></section>
+        <section class="card"><div class="card-title"><div><h3>Grafik konsumsi</h3><p>Tren energi dari seluruh channel</p></div></div>${chart(rows)}</section>
+        <div class="section-head"><h2>Rincian konsumsi</h2><span>Energi per channel</span></div>
+        <section class="card table-wrap">${rows.length ? `<table><thead><tr><th>PERIODE</th>${state.history.names.map((name) => `<th>${esc(name)}</th>`).join("")}<th>TOTAL</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${esc(row.label)}</td>${state.history.names.map((_, index) => `<td>${number(row.kwh[index], 3)} kWh</td>`).join("")}<td><strong>${number(row.total, 3)} kWh</strong></td></tr>`).join("")}</tbody></table>` : empty}</section>`;
+    }
+
+    function renderAccount() {
+      const active = state.latest.filter((item) => item.status === "ON").length;
+      $("view").innerHTML = `
+        <div class="section-head"><h2>Profil pengguna</h2><span>Sesi dashboard saat ini</span></div>
+        <section class="card"><div class="profile"><div class="avatar">${esc((username || "E").slice(0, 1).toUpperCase())}</div><div><h3>${esc(username || "Admin ENNERA")}</h3><p>Administrator · Sesi aktif</p></div></div>
+          <div class="profile-row"><span>Nama pengguna</span><strong>${esc(username || "Admin ENNERA")}</strong></div>
+          <div class="profile-row"><span>Peran</span><strong>Administrator</strong></div>
+          <div class="profile-row"><span>Status sesi</span><strong style="color:var(--green)">Terhubung</strong></div>
+          <div class="profile-row"><span>Channel terpantau</span><strong>${state.latest.length}</strong></div>
+          <div class="profile-row"><span>Channel aktif</span><strong>${active}</strong></div>
+          <div class="profile-row"><span>Login sejak</span><strong>${new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</strong></div>
+        </section>`;
+    }
+
+    async function loadData(notify = false) {
+      $("refresh").disabled = true;
+      try {
+        const period = $("period").value;
+        const [latest, history, analysis] = await Promise.all([
+          api("/api/latest"), api(`/api/history?period=${period}`), api("/api/analysis")
+        ]);
+        state.latest = latest;
+        state.history = history;
+        state.analysis = analysis;
+        render();
+        if (notify) showToast("Data berhasil diperbarui.");
+      } catch (error) {
+        if (token) $("view").innerHTML = `<div class="card empty">${esc(error.message)}</div>`;
+      } finally { $("refresh").disabled = false; }
+    }
+
+    function start() {
+      $("login").hidden = true;
+      $("app").hidden = false;
+      $("sideName").textContent = username || "Admin ENNERA";
+      $("sideAvatar").textContent = (username || "E").slice(0, 1).toUpperCase();
+      $("greeting").textContent = `Halo, ${username || "Admin ENNERA"}!`;
+      $("dateLabel").textContent = new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      loadData();
+      clearInterval(timer);
+      timer = setInterval(() => loadData(), 15000);
+    }
+
+    if (token) start();
+    else { $("login").hidden = false; $("app").hidden = true; }
+  </script>
+</body>
+</html>
